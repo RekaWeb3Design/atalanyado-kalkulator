@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Adatkezelési tájékoztató – Átalányadó Kalkulátor</title>
+  <style>
+    @font-face {
+      font-family: 'JetBrains Mono';
+      font-style: normal;
+      font-display: swap;
+      font-weight: 100 800;
+      src: url('fonts/jetbrains-mono-latin-ext-wght-normal.woff2') format('woff2');
+      unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+    }
+
+    @font-face {
+      font-family: 'JetBrains Mono';
+      font-style: normal;
+      font-display: swap;
+      font-weight: 100 800;
+      src: url('fonts/jetbrains-mono-latin-wght-normal.woff2') format('woff2');
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      background: #0a0f1a;
+      color: #9ca3af;
+      font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', monospace;
+      font-size: 13px;
+      line-height: 1.7;
+      padding: 32px 16px;
+    }
+
+    main {
+      max-width: 640px;
+      margin: 0 auto;
+    }
+
+    .back {
+      display: inline-block;
+      font-size: 12px;
+      color: #4ade80;
+      text-decoration: none;
+      margin-bottom: 32px;
+    }
+
+    .back:hover { text-decoration: underline; }
+
+    .eyebrow {
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: #4ade80;
+      margin-bottom: 8px;
+    }
+
+    h1 {
+      font-size: 24px;
+      font-weight: 700;
+      color: #fff;
+      line-height: 1.25;
+      margin-bottom: 8px;
+    }
+
+    .meta {
+      font-size: 11px;
+      color: #6b7280;
+      margin-bottom: 32px;
+    }
+
+    h2 {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #e5e7eb;
+      margin: 32px 0 10px;
+    }
+
+    p, li { margin-bottom: 10px; }
+
+    ul { padding-left: 20px; }
+
+    strong { color: #e5e7eb; font-weight: 600; }
+
+    a { color: #4ade80; }
+
+    .card {
+      background: #111827;
+      border: 1px solid #1f2937;
+      border-radius: 10px;
+      padding: 16px 20px;
+    }
+
+    .card p:last-child { margin-bottom: 0; }
+
+    .summary {
+      background: rgba(74, 222, 128, 0.08);
+      border: 1px solid rgba(74, 222, 128, 0.2);
+      border-radius: 8px;
+      padding: 14px 16px;
+      color: #d1d5db;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <a class="back" href="./">← Vissza a kalkulátorhoz</a>
+
+    <div class="eyebrow">Átalányadó Kalkulátor</div>
+    <h1>Adatkezelési tájékoztató</h1>
+    <div class="meta">Hatályos: 2026. október 8-tól</div>
+
+    <p class="summary">
+      <strong>Röviden:</strong> a kalkulátor nem gyűjt, nem tárol és nem továbbít személyes adatot.
+      Nincs regisztráció, nincs süti, nincs látogatottságmérés. A beírt összegek kizárólag a
+      te böngésződben maradnak.
+    </p>
+
+    <h2>1. Az adatkezelő</h2>
+    <div class="card">
+      <p>
+        <strong>Víg Réka</strong> (magánszemély)<br />
+        E-mail: <a href="mailto:hello@rekavig.com">hello@rekavig.com</a>
+      </p>
+    </div>
+    <p style="margin-top: 10px;">
+      A kalkulátor ingyenes, nem üzleti célú, nyílt forráskódú eszköz.
+    </p>
+
+    <h2>2. Milyen adatokat NEM kezelünk</h2>
+    <ul>
+      <li>A kalkulátorba beírt összegek és beállítások nem kerülnek el semmilyen szerverre. A számítás teljes egészében a böngésződben fut, és az oldal bezárásával elvész.</li>
+      <li>Az oldal nem használ sütit (cookie-t), helyi tárolót (localStorage) vagy más követési technológiát.</li>
+      <li>Nincs látogatottságmérés (pl. Google Analytics), hirdetés vagy közösségimédia-beépülő.</li>
+      <li>Az oldal minden elemét (betűtípus, programkönyvtárak) a saját tárhelyéről tölti be, így nem jut el adat harmadik fél szolgáltatóhoz (pl. Google Fonts).</li>
+    </ul>
+
+    <h2>3. Tárhelyszolgáltatók és technikai naplók</h2>
+    <p>
+      Mint minden weboldal esetében, a tárhelyszolgáltató szerverei az oldal kiszolgálásához
+      automatikusan feldolgoznak bizonyos technikai adatokat: az IP-címedet, a böngésző típusát,
+      a kérés időpontját és a lekért fájl címét. Ezekhez az adatokhoz az adatkezelő nem fér hozzá
+      és nem használja őket.
+    </p>
+    <ul>
+      <li>
+        <strong>Cloudflare, Inc.</strong> (101 Townsend St., San Francisco, CA 94107, USA) –
+        az atalanyado-kalkulator.pages.dev cím kiszolgálója.
+        <a href="https://www.cloudflare.com/privacypolicy/" rel="noopener">Adatvédelmi szabályzat</a>
+      </li>
+      <li>
+        <strong>GitHub, Inc.</strong> (88 Colin P. Kelly Jr. Street, San Francisco, CA 94107, USA) –
+        a github.io-s tükörcím és a forráskód tárhelye.
+        <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement" rel="noopener">Adatvédelmi nyilatkozat</a>
+      </li>
+    </ul>
+    <p>
+      <strong>Cél és jogalap:</strong> az oldal biztonságos és megbízható kiszolgálása, a GDPR
+      6. cikk (1) bekezdés f) pontja szerinti jogos érdek alapján.
+      <strong>Megőrzési idő:</strong> a szolgáltatók saját szabályzata szerint.
+      <strong>Adattovábbítás az EU-n kívülre:</strong> mindkét szolgáltató amerikai székhelyű.
+      Az adattovábbítás az EU–USA adatvédelmi keretrendszer és/vagy az Európai Bizottság
+      általános szerződési feltételei alapján történik.
+    </p>
+
+    <h2>4. Kapcsolatfelvétel</h2>
+    <p>
+      Ha e-mailt írsz, a nevedet, e-mail-címedet és az üzenet tartalmát kizárólag a megkeresésed
+      megválaszolására használjuk (jogalap: jogos érdek, GDPR 6. cikk (1) f)), és csak addig őrizzük,
+      ameddig ehhez szükséges. Ha a GitHubon nyitsz hibajegyet (issue) vagy pull requestet, az
+      a GitHub feltételei szerint nyilvános.
+    </p>
+
+    <h2>5. A jogaid</h2>
+    <p>A GDPR alapján jogosult vagy:</p>
+    <ul>
+      <li>tájékoztatást kérni a rólad kezelt adatokról, és hozzáférni azokhoz (15. cikk);</li>
+      <li>kérni az adatok helyesbítését (16. cikk), törlését (17. cikk) vagy kezelésük korlátozását (18. cikk);</li>
+      <li>tiltakozni a jogos érdeken alapuló adatkezelés ellen (21. cikk).</li>
+    </ul>
+    <p>
+      Kérésedet a <a href="mailto:hello@rekavig.com">hello@rekavig.com</a> címre küldheted,
+      legkésőbb egy hónapon belül válaszolunk.
+    </p>
+
+    <h2>6. Jogorvoslat</h2>
+    <p>
+      Panasszal fordulhatsz a <strong>Nemzeti Adatvédelmi és Információszabadság Hatósághoz</strong>
+      (NAIH, 1055 Budapest, Falk Miksa utca 9–11., <a href="https://naih.hu" rel="noopener">naih.hu</a>,
+      ugyfelszolgalat@naih.hu), illetve bírósághoz is fordulhatsz (a lakóhelyed szerinti törvényszék
+      előtt is).
+    </p>
+
+    <h2>7. Módosítás</h2>
+    <p>
+      Ha az oldal működése változik (pl. bekerül látogatottságmérés), ezt a tájékoztatót előzetesen
+      frissítjük. A korábbi változatok a projekt nyilvános GitHub-tárolójában visszakereshetők.
+    </p>
+  </main>
+</body>
+</html>
