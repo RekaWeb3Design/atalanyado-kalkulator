@@ -436,6 +436,33 @@
       letter-spacing: 1px;
     }
 
+    .privacy-note {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      background: #111827;
+      border: 1px solid #1f2937;
+      border-radius: 8px;
+      padding: 12px 14px;
+      margin: -16px 0 28px 0;
+      font-size: 11px;
+      line-height: 1.6;
+      color: #9ca3af;
+    }
+
+    .privacy-note strong {
+      color: #e5e7eb;
+      font-weight: 600;
+    }
+
+    .privacy-note a {
+      color: #4ade80;
+    }
+
+    .privacy-note .icon {
+      flex-shrink: 0;
+    }
+
     .disclaimer {
       margin-top: 40px;
       padding-top: 16px;
@@ -450,23 +477,22 @@
 <body>
   <div id="root"></div>
 
+  <script src="calc.js"></script>
   <script type="text/babel">
     const { useState, useMemo } = React;
+    const { TAX_RULES_2026, STATUS, calculate } = window.AtalanyCalc;
 
     const COST_RATIOS = [
-      { value: 0.45, label: "45%", desc: "Általános (IT, tanácsadás, oktatás)" },
-      { value: 0.80, label: "80%", desc: "Építőipar, feldolgozóipar, mezőgazd." },
-      { value: 0.90, label: "90%", desc: "Kizárólag kiskereskedelem" },
+      { value: 0.45, label: "45%", desc: "Általános (minden más tevékenység)" },
+      { value: 0.80, label: "80%", desc: "Kizárólag listázott kisipar és/vagy vendéglátás" },
+      { value: 0.90, label: "90%", desc: "Kizárólag kiskereskedelem (vendéglátás nem)" },
     ];
 
-    const TAX_RULES_2026 = {
-      szja: 0.15,
-      tb: 0.185,
-      szocho: 0.13,
-      taxFreeIncome: 1936800,
-      minWageMonthly: 322800,
-      guaranteedMinMonthly: 373200,
-    };
+    const STATUS_OPTIONS = [
+      { value: STATUS.MAIN, label: "Főfoglalkozású" },
+      { value: STATUS.SIDE, label: "Mellékfoglalkozású" },
+      { value: STATUS.PENSIONER, label: "Nyugdíjas" },
+    ];
 
     function formatHuf(amount) {
       return new Intl.NumberFormat("hu-HU", {
@@ -481,54 +507,29 @@
       return ((part / total) * 100).toFixed(1);
     }
 
-    function taxFreeBevLimit(costRatio) {
-      return Math.floor(TAX_RULES_2026.taxFreeIncome / (1 - costRatio));
-    }
-
     function App() {
       const [projectAmount, setProjectAmount] = useState("");
       const [costRatio, setCostRatio] = useState(0.45);
-      const [aboveTaxFree, setAboveTaxFree] = useState(true);
-      const [isMainOccupation, setIsMainOccupation] = useState(true);
+      const [status, setStatus] = useState(STATUS.MAIN);
       const [requiresDegree, setRequiresDegree] = useState(false);
+      const [szjaExempt, setSzjaExempt] = useState(false);
+      const [aboveTaxFree, setAboveTaxFree] = useState(true);
 
+      const isMain = status === STATUS.MAIN;
+      const isPensioner = status === STATUS.PENSIONER;
       const incomeRatio = 1 - costRatio;
 
       const result = useMemo(() => {
-        const revenue = Number(projectAmount) || 0;
-        if (revenue === 0) return null;
-
-        const r = TAX_RULES_2026;
-        const income = revenue * incomeRatio;
-
-        const szja = aboveTaxFree ? income * r.szja : 0;
-        const tb = income * r.tb;
-        const szocho = income * r.szocho;
-
-        const totalTax = szja + tb + szocho;
-        const netIncome = revenue - totalTax;
-
-        const minBase = requiresDegree ? r.guaranteedMinMonthly : r.minWageMonthly;
-        const monthlyMinTb = minBase * r.tb;
-        const monthlyMinSocho = minBase * r.szocho;
-        const monthlyMinTotal = monthlyMinTb + monthlyMinSocho;
-
-        return {
-          revenue,
-          costDeduction: revenue * costRatio,
-          income,
-          szja,
-          tb,
-          szocho,
-          totalTax,
-          netIncome,
-          effectiveRate: calcPercent(totalTax, revenue),
+        const r = calculate({
+          revenue: projectAmount,
           aboveTaxFree,
-          monthlyMinTotal,
-          monthlyMinTb,
-          monthlyMinSocho,
-        };
-      }, [projectAmount, costRatio, aboveTaxFree, isMainOccupation, requiresDegree, incomeRatio]);
+          costRatio,
+          status,
+          requiresDegree: isMain && requiresDegree,
+          szjaExempt,
+        });
+        return r.revenue === 0 ? null : r;
+      }, [projectAmount, aboveTaxFree, costRatio, status, isMain, requiresDegree, szjaExempt]);
 
       return (
         <div className="calc-container">
@@ -538,12 +539,22 @@
             <span className="year-badge">2026</span>
           </div>
 
+          <div className="privacy-note">
+            <span className="icon">🔒</span>
+            <span>
+              <strong>Semmilyen adatot nem mentünk és nem küldünk el.</strong> A számítás csak a te
+              böngésződben fut, a beírt összegek az oldal bezárásakor eltűnnek.{" "}
+              <a href="adatvedelem.html">Részletek</a>
+            </span>
+          </div>
+
           {/* Project amount */}
           <div className="input-group">
             <label className="input-label">Projekt összege (bruttó bevétel)</label>
             <input
               className="input-field"
               type="number"
+              min="0"
               placeholder="pl. 500 000"
               value={projectAmount}
               onChange={(e) => setProjectAmount(e.target.value)}
@@ -566,12 +577,12 @@
             ))}
           </div>
           <div className="input-hint" style={{ marginBottom: 20 }}>
-            Jövedelem = bevétel × {Math.round((1 - costRatio) * 100)}% (az adóalap)
+            Jövedelem = bevétel × {Math.round(incomeRatio * 100)}% · ha más tevékenységből is van bevételed, minden bevételre 45% jár
           </div>
 
-          {/* SZJA-free toggle */}
+          {/* SZJA-free band toggle */}
           <label className="input-label" style={{ marginBottom: 10 }}>
-            SZJA-mentes sáv (jövedelem {'<'} {formatHuf(TAX_RULES_2026.taxFreeIncome)})
+            SZJA-mentes sáv (idei jövedelem {'<'} {formatHuf(TAX_RULES_2026.taxFreeIncome)})
           </label>
           <div className="toggle-row">
             <button
@@ -588,32 +599,29 @@
             </button>
           </div>
           <div className="input-hint" style={{ marginBottom: 20, marginTop: -8 }}>
-            {aboveTaxFree
-              ? "SZJA-t is kell fizetned a projektből"
-              : `~${formatHuf(taxFreeBevLimit(costRatio))} bevételig nem kell SZJA-t fizetned idén`}
+            {costRatio === 0.45 ? "45%-os" : costRatio === 0.8 ? "80%-os" : "90%-os"} költséghányadnál
+            kb. {formatHuf(Math.floor(TAX_RULES_2026.taxFreeIncome / incomeRatio))} éves bevételig tart a sáv.
+            A sávba eső jövedelem után SZJA, TB és szocho sem jár.
           </div>
 
-          {/* Occupation type */}
+          {/* Status */}
           <label className="input-label" style={{ marginBottom: 10 }}>
-            Foglalkozás típusa
+            Jogállás
           </label>
           <div className="toggle-row">
-            <button
-              className={`toggle-btn ${isMainOccupation ? "active" : ""}`}
-              onClick={() => setIsMainOccupation(true)}
-            >
-              Főfoglalkozású
-            </button>
-            <button
-              className={`toggle-btn ${!isMainOccupation ? "active" : ""}`}
-              onClick={() => setIsMainOccupation(false)}
-            >
-              Mellékfoglalkozású
-            </button>
+            {STATUS_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                className={`toggle-btn ${status === opt.value ? "active" : ""}`}
+                onClick={() => setStatus(opt.value)}
+              >
+                {opt.label}
+              </button>
+            ))}
           </div>
 
           {/* Degree requirement */}
-          {isMainOccupation && (
+          {isMain && (
             <>
               <label className="input-label" style={{ marginBottom: 10 }}>
                 Tevékenység szintje (min. járulékalaphoz)
@@ -635,12 +643,51 @@
             </>
           )}
 
+          {/* SZJA exemption */}
+          <label className="input-label" style={{ marginBottom: 10 }}>
+            SZJA-kedvezmény
+          </label>
+          <div className="toggle-row">
+            <button
+              className={`toggle-btn ${!szjaExempt ? "active" : ""}`}
+              onClick={() => setSzjaExempt(false)}
+            >
+              Nincs
+            </button>
+            <button
+              className={`toggle-btn ${szjaExempt ? "active" : ""}`}
+              onClick={() => setSzjaExempt(true)}
+            >
+              Teljes SZJA-mentesség
+            </button>
+          </div>
+          <div className="input-hint" style={{ marginBottom: 20, marginTop: -8 }}>
+            Pl. két- vagy háromgyermekes anyák, 30 év alatti anyák, 25 év alattiak (utóbbi kettőnél összeghatárig).
+            A TB-járulék és a szocho ilyenkor is fizetendő.
+          </div>
+
           {/* Results */}
           {result && (
             <>
               <div className="divider" />
 
               <div className="result-section">
+                {result.overRevenueLimit && (
+                  <div className="info-banner" style={{
+                    background: "rgba(248, 113, 113, 0.08)",
+                    borderColor: "rgba(248, 113, 113, 0.2)",
+                    marginTop: 0,
+                    marginBottom: 20,
+                  }}>
+                    <span className="icon" style={{ color: "#f87171" }}>⚠</span>
+                    <span className="text">
+                      Ez a projekt egymagában átlépi az átalányadózás éves bevételi határát
+                      ({formatHuf(result.revenueLimit)}). Ilyenkor megszűnik az átalányadózásra való jogosultság,
+                      és az alábbi számítás nem érvényes — fordulj könyvelőhöz!
+                    </span>
+                  </div>
+                )}
+
                 <div className="result-hero">
                   <div className="label">Neked marad</div>
                   <div className="amount">{formatHuf(result.netIncome)}</div>
@@ -740,13 +787,31 @@
                     <span className="value">{formatHuf(result.income)}</span>
                   </div>
 
+                  <div className="breakdown-row">
+                    <div className="left">
+                      <span className="name">
+                        ebből mentes sávba esik <span className="rate">SZJA, TB, szocho nélkül</span>
+                      </span>
+                    </div>
+                    <span className="value" style={{ color: "#6b7280" }}>{formatHuf(result.taxFreePart)}</span>
+                  </div>
+
+                  <div className="breakdown-row">
+                    <div className="left">
+                      <span className="name">
+                        ebből adóköteles <span className="rate">a terhek alapja</span>
+                      </span>
+                    </div>
+                    <span className="value">{formatHuf(result.taxableIncome)}</span>
+                  </div>
+
                   <div style={{ height: 8 }} />
 
                   <div className="breakdown-row">
                     <div className="left">
                       <div className="dot" style={{ background: "#f87171" }} />
                       <span className="name">
-                        SZJA <span className="rate">{aboveTaxFree ? "15%" : "0% (mentes)"}</span>
+                        SZJA <span className="rate">{szjaExempt ? "0% (kedvezmény)" : "15%"}</span>
                       </span>
                     </div>
                     <span className="value">{formatHuf(result.szja)}</span>
@@ -756,7 +821,7 @@
                     <div className="left">
                       <div className="dot" style={{ background: "#fb923c" }} />
                       <span className="name">
-                        TB járulék <span className="rate">18,5%</span>
+                        TB járulék <span className="rate">{isPensioner ? "0% (nyugdíjas)" : "18,5%"}</span>
                       </span>
                     </div>
                     <span className="value">{formatHuf(result.tb)}</span>
@@ -766,7 +831,7 @@
                     <div className="left">
                       <div className="dot" style={{ background: "#fbbf24" }} />
                       <span className="name">
-                        SZOCHO <span className="rate">13%</span>
+                        SZOCHO <span className="rate">{isPensioner ? "0% (nyugdíjas)" : "13%"}</span>
                       </span>
                     </div>
                     <span className="value">{formatHuf(result.szocho)}</span>
@@ -780,31 +845,42 @@
                   </div>
                 </div>
 
-                {/* Tax-free info */}
-                {!result.aboveTaxFree && (
+                {/* Tax-free band info */}
+                {result.taxableIncome === 0 && (
                   <div className="info-banner">
                     <span className="icon">✦</span>
                     <span className="text">
-                      Az SZJA-mentes sávban vagy — erre a projektre <strong>nem kell SZJA-t fizetned</strong>!
-                      Az adómentes határ: {formatHuf(TAX_RULES_2026.taxFreeIncome)} jövedelem (~{formatHuf(taxFreeBevLimit(costRatio))} bevétel).
-                      Ha átléped, kapcsold át a gombot!
+                      Az SZJA-mentes sávban vagy — erre a projektre <strong>nem kell SZJA-t, TB-t és szochót fizetned</strong>.
+                      Ha ezzel a projekttel átléped a sávot, a felette lévő rész után már fizetsz: ilyenkor
+                      a „Már felette vagyok” gomb a biztonságos becslés.
                     </span>
                   </div>
                 )}
 
-                {result.aboveTaxFree && (
+                {result.taxableIncome > 0 && result.taxFreePart > 0 && (
+                  <div className="info-banner">
+                    <span className="icon">✦</span>
+                    <span className="text">
+                      A projekt jövedelme egymagában nagyobb a sávnál: {formatHuf(result.taxFreePart)} még
+                      mentes, a többi {formatHuf(result.taxableIncome)} után már fizetsz. Ha a sávból idén már
+                      elhasználtál, ennél többet.
+                    </span>
+                  </div>
+                )}
+
+                {result.taxableIncome > 0 && result.taxFreePart === 0 && (
                   <div className="info-banner" style={{
                     background: "rgba(248, 113, 113, 0.08)",
                     borderColor: "rgba(248, 113, 113, 0.2)"
                   }}>
                     <span className="icon" style={{ color: "#f87171" }}>✦</span>
                     <span className="text">
-                      Túllépted az SZJA-mentes sávot — a teljes projekt jövedelme után fizetsz 15% SZJA-t is.
+                      Túllépted az SZJA-mentes sávot — a projekt teljes jövedelme után fizetsz SZJA-t, TB-t és szochót.
                     </span>
                   </div>
                 )}
 
-                {isMainOccupation && (
+                {isMain && (
                   <div className="warning-banner">
                     <span className="icon">⚠</span>
                     <span className="text">
@@ -812,7 +888,18 @@
                       <strong>{formatHuf(result.monthlyMinTotal)}</strong>
                       {" "}(TB: {formatHuf(result.monthlyMinTb)} + SZOCHO: {formatHuf(result.monthlyMinSocho)})
                       — akkor is, ha nem számlázol.
-                      Alap: {requiresDegree ? "garantált bérminimum" : "minimálbér"} ({formatHuf(requiresDegree ? TAX_RULES_2026.guaranteedMinMonthly : TAX_RULES_2026.minWageMonthly)}/hó).
+                      Alap: {requiresDegree ? "garantált bérminimum" : "minimálbér"} ({formatHuf(result.minBase)}/hó).
+                      A projekt TB- és szocho-összege felső becslés: a már befizetett minimum a negyedéves
+                      elszámolásnál beszámíthat.
+                    </span>
+                  </div>
+                )}
+
+                {isPensioner && (
+                  <div className="warning-banner">
+                    <span className="icon">⚠</span>
+                    <span className="text">
+                      Nyugdíjasként (kiegészítő tevékenységet folytatóként) TB-járulékot és szochót nem fizetsz, csak SZJA-t.
                     </span>
                   </div>
                 )}
