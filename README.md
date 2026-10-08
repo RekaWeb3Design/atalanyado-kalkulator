@@ -2,7 +2,7 @@
 
 Egyszerű, böngészőben futó kalkulátor magyar átalányadózó egyéni vállalkozóknak: megmutatja, mennyi marad egy projekt bevételéből SZJA, TB-járulék és SZOCHO levonása után.
 
-**Élő verzió:** https://rekaweb3design.github.io/atalanyado-kalkulator/
+**Élő verzió:** https://atalanyado-kalkulator.pages.dev/
 
 ## Mit tud
 
